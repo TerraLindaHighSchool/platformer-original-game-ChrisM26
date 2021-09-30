@@ -33,7 +33,7 @@ public class Level1 extends World
      */
     private void prepare()
     {
-        Player player = new Player();
+        Player player = new Player(3, 5.6f, GRAVITY, 3, 3, Level2.class, Music);
         addObject(player,68,740);
         setPaintOrder(Player.class, Platform.class, Obstacle.class, Collectable.class,
             Door.class, HUD.class);
