@@ -8,10 +8,10 @@ import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
  */
 public class Player extends Actor
 {
-    private Health[] health;
-    private Powerup[] powerup;
-    private int healthCount;
-    private int speed;
+private Health[] health;
+private Powerup[] powerup;
+private int healthCount;
+private int speed;
     private int walkIndex;
     private int frame;
     private float yVelocity;
@@ -25,7 +25,7 @@ public class Player extends Actor
     private final Class NEXT_LEVEL;
     private final GreenfootSound MUSIC;
     
-    public Player(int speed, float jumpForce, float gravity, int maxHealth,
+public Player(int speed, float jumpForce, float gravity, int maxHealth,
                   int maxPowerup, Class nextLevel, GreenfootSound music)
     {
          this.speed = speed;
@@ -44,27 +44,100 @@ public class Player extends Actor
                              new GreenfootImage("walk4.png"),
                              new GreenfootImage("walk5.png"),
                          };
+                         
+    int sum= 0;                     
+    for(int i = 1; i <= 6; i++)
+    {
+        sum += i;
     }
-    
+    System.out.println(sum);
+    }
+
                     
     
     
     
-    /**
+/**
      * Act - do whatever the Player wants to do. This method is called whenever
      * the 'Act' or 'Run' button gets pressed in the environment.
      */
     public void act()
     {
-        animator();
-        move(speed);
+        walk();
+        jump();
+        fall();
+        onCollision();
+        gameOver();
     }
     
-    public void addedToWorld(World world) {}
+public void addedToWorld(World world) {}
     
-    private void walk() {}
-    private void jump() {}
-    private void animator()
+    private void walk()
+    {
+        if(isWalking)
+        {
+            animator();
+        }
+        else
+        {
+            setImage(STANDING_IMAGE);
+            walkIndex = 0;
+        }
+        
+        if(Greenfoot. isKeyDown("right"))
+        {
+            if(isFacingLeft)
+            {
+                mirrorImages();
+            }
+            isWalking = true;
+            isFacingLeft = false;
+            move(speed);
+        }
+        
+        if(Greenfoot.isKeyDown("left"))
+        {
+            if(!isFacingLeft)
+            { 
+                mirrorImages();
+            }
+            isWalking = true;
+            move(-speed);
+        }
+        
+        if(!(Greenfoot.isKeyDown("right") || Greenfoot. isKeyDown("Left")))
+        {
+            isWalking = false;
+        }
+    }
+
+
+private void jump() 
+{
+    if(Greenfoot.isKeyDown("space") && isOnGround())
+    {
+        yVelocity = JUMP_FORCE;
+        isJumping = true;
+    }
+    
+    if(isJumping && yVelocity > 0)
+    {
+        setLocation(getX(), getY() - (int) yVelocity);
+        yVelocity -=GRAVITY;
+    }
+    else
+    {
+        isJumping = false;
+    }
+}
+
+private void fall() 
+{
+    setLocation(getX(), getY() -(int) yVelocity);
+    yVelocity -= GRAVITY;
+}
+    
+private void animator()
     {
         if(walkIndex < WALK_ANIMATION.length)
         {
@@ -77,11 +150,19 @@ public class Player extends Actor
         }
         frame++;
     }
-    private void onCollision() {}
-    private void mirrorImages() {}
+private void onCollision() {}
+private void mirrorImages() 
+    {
+        for(int i = 0; i < WALK_ANIMATION.length; i++)
+        {
+            WALK_ANIMATION[i].mirrorHorizontally();
+        }
+    }
     private void gameOver() {}
+    
     private boolean isOnGround()
     {
-        return false;
+        Actor ground = getOneObjectAtOffset(0, getImage().getHeight() / 2, Platform.class);
+        return ground != null;
     }
 }
