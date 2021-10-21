@@ -8,10 +8,10 @@ import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
  */
 public class Player extends Actor
 {
-private Health[] health;
-private Powerup[] powerup;
-private int healthCount;
-private int speed;
+    private Health[] health;
+    private Powerup[] powerup;
+    private int healthCount;
+    private int speed;
     private int walkIndex;
     private int frame;
     private float yVelocity;
@@ -28,14 +28,17 @@ private int speed;
 public Player(int speed, float jumpForce, float gravity, int maxHealth,
                   int maxPowerup, Class nextLevel, GreenfootSound music)
     {
-         this.speed = speed;
-         JUMP_FORCE = jumpForce;
-         GRAVITY = gravity;
-         NEXT_LEVEL = nextLevel;
-         MUSIC = music;
+     this.speed = speed;
+    JUMP_FORCE = jumpForce;
+    GRAVITY = gravity;
+    NEXT_LEVEL = nextLevel;
+    MUSIC = music;
+    
+    healthCount = maxHealth;
+    health = new Health[maxHealth];
          
-        STANDING_IMAGE = getImage();
-        WALK_ANIMATION = new GreenfootImage[]
+    STANDING_IMAGE = getImage();
+    WALK_ANIMATION = new GreenfootImage[]
                          {
                              new GreenfootImage("walk0.png"),
                              new GreenfootImage("walk1.png"),
@@ -44,23 +47,13 @@ public Player(int speed, float jumpForce, float gravity, int maxHealth,
                              new GreenfootImage("walk4.png"),
                              new GreenfootImage("walk5.png"),
                          };
-                         
-    int sum= 0;                     
-    for(int i = 1; i <= 6; i++)
-    {
-        sum += i;
-    }
-    System.out.println(sum);
-    }
-
-                    
-    
-    
+}
     
 /**
      * Act - do whatever the Player wants to do. This method is called whenever
      * the 'Act' or 'Run' button gets pressed in the environment.
      */
+    
     public void act()
     {
         walk();
@@ -70,9 +63,17 @@ public Player(int speed, float jumpForce, float gravity, int maxHealth,
         gameOver();
     }
     
-public void addedToWorld(World world) {}
+public void addedToWorld(World world) 
+{
+    health[0] = new Health();
+    world. addObject(health[0], 30, 36);
+    health[1] = new Health();
+    world. addObject(health[1], 72, 36);
+    health[2] = new Health();
+    world. addObject(health[2], 114, 36);
+}
     
-    private void walk()
+private void walk()
     {
         if(isWalking)
         {
@@ -84,8 +85,13 @@ public void addedToWorld(World world) {}
             walkIndex = 0;
         }
         
-        if(Greenfoot. isKeyDown("right"))
+        if(Greenfoot.isKeyDown("right"))
         {
+            if(!MUSIC.isPlaying())
+            {
+              MUSIC.playLoop();  
+            }
+            
             if(isFacingLeft)
             {
                 mirrorImages();
@@ -105,7 +111,7 @@ public void addedToWorld(World world) {}
             move(-speed);
         }
         
-        if(!(Greenfoot.isKeyDown("right") || Greenfoot. isKeyDown("Left")))
+        if(!(Greenfoot.isKeyDown("right") || Greenfoot. isKeyDown("left")))
         {
             isWalking = false;
         }
@@ -118,6 +124,7 @@ private void jump()
     {
         yVelocity = JUMP_FORCE;
         isJumping = true;
+        Greenfoot.playSound("jump.wav");
     }
     
     if(isJumping && yVelocity > 0)
@@ -129,15 +136,21 @@ private void jump()
     {
         isJumping = false;
     }
+
 }
 
 private void fall() 
 {
+    if(!isJumping && !isOnGround())
+    {
     setLocation(getX(), getY() -(int) yVelocity);
     yVelocity -= GRAVITY;
+    }
 }
-    
+
 private void animator()
+{
+    if(frame % 9 == 0)
     {
         if(walkIndex < WALK_ANIMATION.length)
         {
@@ -148,9 +161,40 @@ private void animator()
         {
             walkIndex = 0;
         }
-        frame++;
     }
-private void onCollision() {}
+    frame++;
+}
+private void onCollision() 
+{
+    if(isTouching(Door.class))
+    {
+        World world = null;
+        try
+        {
+            world = (World) NEXT_LEVEL. newInstance();
+        }
+        catch (InstantiationException e)
+        {
+            System.out.println("Class cannot be istantiated");
+        } catch (IllegalAccessException e) {
+            System.out.println("Cannot access class constructor");
+        }
+        Greenfoot.setWorld(world);
+        
+    }
+    
+    if(isTouching(Obstacle.class))
+    {
+        removeTouching(Obstacle.class);
+        getWorld().removeObject(health[healthCount -1]);
+        healthCount--;
+        Greenfoot.playSound("explosionSmall.wav");
+    }
+    
+}
+
+
+    
 private void mirrorImages() 
     {
         for(int i = 0; i < WALK_ANIMATION.length; i++)
@@ -158,9 +202,15 @@ private void mirrorImages()
             WALK_ANIMATION[i].mirrorHorizontally();
         }
     }
-    private void gameOver() {}
+private void gameOver() 
+{
+    if(healthCount == 0)
+    {
+        Greenfoot.setWorld(new Level1());
+    }
+}
     
-    private boolean isOnGround()
+private boolean isOnGround()
     {
         Actor ground = getOneObjectAtOffset(0, getImage().getHeight() / 2, Platform.class);
         return ground != null;
