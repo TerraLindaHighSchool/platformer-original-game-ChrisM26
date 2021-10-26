@@ -143,8 +143,8 @@ private void fall()
 {
     if(!isJumping && !isOnGround())
     {
-    setLocation(getX(), getY() -(int) yVelocity);
-    yVelocity -= GRAVITY;
+        setLocation(getX(), getY() -(int) yVelocity);
+        yVelocity -= GRAVITY;
     }
 }
 
@@ -189,6 +189,12 @@ private void onCollision()
         getWorld().removeObject(health[healthCount -1]);
         healthCount--;
         Greenfoot.playSound("explosionSmall.wav");
+    }
+    
+    if(isTouching(Platform.class))
+    {
+        isJumping = false;
+        
     }
     
 }
