@@ -108,6 +108,7 @@ private void walk()
                 mirrorImages();
             }
             isWalking = true;
+            isFacingLeft = true;
             move(-speed);
         }
         
@@ -193,8 +194,15 @@ private void onCollision()
     
     if(isTouching(Platform.class))
     {
-        isJumping = false;
-        
+        yVelocity = -1;
+        fall();
+    }
+    
+    if(isTouching(Collectable.class) && healthCount < 3)
+    {
+        healthCount++;
+        getWorld().addObject(health[2], 114, 36);
+        removeTouching(Collectable.class);
     }
     
 }
